@@ -5,8 +5,8 @@ import com.corhuila.edutrack.academic.domain.model.Grade;
 import com.corhuila.edutrack.academic.domain.model.GradeCreatedEvent;
 import com.corhuila.edutrack.academic.domain.port.in.CreateGradeUseCase;
 import com.corhuila.edutrack.academic.domain.port.in.GetGradesUseCase;
-import com.corhuila.edutrack.academic.domain.port.out.GradeEventPublisherPort;
 import com.corhuila.edutrack.academic.domain.port.out.GradeRepositoryPort;
+import com.corhuila.edutrack.academic.domain.port.out.OutboxEventPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,20 +17,26 @@ import java.util.UUID;
 @Service
 public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
 
-    private final GradeRepositoryPort gradeRepositoryPort;
-    private final GradeEventPublisherPort gradeEventPublisherPort;
+    private static final String GRADE_AGGREGATE_TYPE = "Grade";
+    private static final double MIN_SCORE = 0.0;
+    private static final double MAX_SCORE = 5.0;
 
-    public GradeService(GradeRepositoryPort gradeRepositoryPort, GradeEventPublisherPort gradeEventPublisherPort) {
+    private final GradeRepositoryPort gradeRepositoryPort;
+    private final OutboxEventPort outboxEventPort;
+
+    public GradeService(GradeRepositoryPort gradeRepositoryPort, OutboxEventPort outboxEventPort) {
         this.gradeRepositoryPort = gradeRepositoryPort;
-        this.gradeEventPublisherPort = gradeEventPublisherPort;
+        this.outboxEventPort = outboxEventPort;
     }
 
+    /**
+     * Saves the grade and its GradeCreated event in ONE local transaction (ADR-007).
+     * Either both are committed or both are rolled back, so no event is ever lost.
+     */
     @Override
     @Transactional
     public Grade createGrade(UUID studentId, UUID assignmentId, Double score, String feedback) {
-        if (score == null || score < 0.0 || score > 5.0) {
-            throw new InvalidGradeException("Score must be between 0.0 and 5.0 according to academic scale");
-        }
+        validateScore(score);
 
         Grade grade = new Grade(
             UUID.randomUUID(),
@@ -43,15 +49,8 @@ public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
 
         Grade saved = gradeRepositoryPort.save(grade);
 
-        // Publish GradeCreated domain event to AMQP bus
-        GradeCreatedEvent.GradeCreatedPayload payload = new GradeCreatedEvent.GradeCreatedPayload(
-            saved.getId().toString(),
-            saved.getStudentId().toString(),
-            saved.getAssignmentId().toString(),
-            saved.getScore()
-        );
-        GradeCreatedEvent event = new GradeCreatedEvent(saved.getId().toString(), payload);
-        gradeEventPublisherPort.publishGradeCreated(event);
+        // No direct broker call: the event is stored in the outbox and relayed asynchronously
+        outboxEventPort.append(GRADE_AGGREGATE_TYPE, buildGradeCreatedEvent(saved));
 
         return saved;
     }
@@ -66,5 +65,21 @@ public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
     @Transactional(readOnly = true)
     public List<Grade> getAllGrades() {
         return gradeRepositoryPort.findAll();
+    }
+
+    private void validateScore(Double score) {
+        if (score == null || score < MIN_SCORE || score > MAX_SCORE) {
+            throw new InvalidGradeException("Score must be between 0.0 and 5.0 according to academic scale");
+        }
+    }
+
+    private GradeCreatedEvent buildGradeCreatedEvent(Grade grade) {
+        GradeCreatedEvent.GradeCreatedPayload payload = new GradeCreatedEvent.GradeCreatedPayload(
+            grade.getId().toString(),
+            grade.getStudentId().toString(),
+            grade.getAssignmentId().toString(),
+            grade.getScore()
+        );
+        return new GradeCreatedEvent(grade.getId().toString(), payload);
     }
 }
