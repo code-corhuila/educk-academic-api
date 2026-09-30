@@ -3,7 +3,7 @@ package com.corhuila.edutrack.academic.domain.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class GradeCreatedEvent {
+public class GradeCreatedEvent implements DomainEvent{
     private String eventId;
     private String eventType;
     private LocalDateTime occurredAt;
