@@ -7,4 +7,5 @@ import java.util.UUID;
 public interface GetGradesUseCase {
     List<Grade> getGradesByStudent(UUID studentId);
     List<Grade> getAllGrades();
+    com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse getStudentPerformance(UUID studentId);
 }
