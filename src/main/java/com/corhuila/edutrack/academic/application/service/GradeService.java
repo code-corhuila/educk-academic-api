@@ -67,6 +67,20 @@ public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
         return gradeRepositoryPort.findAll();
     }
 
+    @Transactional(readOnly = true)
+    public com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse getStudentPerformance(UUID studentId) {
+        List<Grade> grades = gradeRepositoryPort.findByStudentId(studentId);
+        if (grades.isEmpty()) {
+            return new com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse(0.0, false);
+        }
+        double sum = 0.0;
+        for (Grade g : grades) {
+            sum += g.getScore();
+        }
+        double average = sum / grades.size();
+        return new com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse(average, average >= 3.0);
+    }
+
     private void validateScore(Double score) {
         if (score == null || score < MIN_SCORE || score > MAX_SCORE) {
             throw new InvalidGradeException("Score must be between 0.0 and 5.0 according to academic scale");
