@@ -43,6 +43,11 @@ public class GradeController {
         return ResponseEntity.ok(grades.stream().map(GradeResponse::fromDomain).collect(Collectors.toList()));
     }
 
+    @GetMapping("/student/{studentId}/performance")
+    public ResponseEntity<com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse> getStudentPerformance(@PathVariable UUID studentId) {
+        return ResponseEntity.ok(getGradesUseCase.getStudentPerformance(studentId));
+    }
+
     @GetMapping
     public ResponseEntity<List<GradeResponse>> getAllGrades() {
         List<Grade> grades = getGradesUseCase.getAllGrades();
