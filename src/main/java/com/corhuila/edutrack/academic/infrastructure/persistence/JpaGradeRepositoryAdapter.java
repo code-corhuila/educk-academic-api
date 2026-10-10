@@ -25,6 +25,7 @@ public class JpaGradeRepositoryAdapter implements GradeRepositoryPort {
             grade.getStudentId(),
             grade.getAssignmentId(),
             grade.getScore(),
+            grade.getWeight(),
             grade.getFeedback(),
             grade.getCreatedAt()
         );
@@ -57,6 +58,7 @@ public class JpaGradeRepositoryAdapter implements GradeRepositoryPort {
             entity.getStudentId(),
             entity.getAssignmentId(),
             entity.getScore(),
+            entity.getWeight(),
             entity.getFeedback(),
             entity.getCreatedAt()
         );

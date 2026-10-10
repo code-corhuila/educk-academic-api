@@ -35,7 +35,7 @@ public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
      */
     @Override
     @Transactional
-    public Grade createGrade(UUID studentId, UUID assignmentId, Double score, String feedback) {
+    public Grade createGrade(UUID studentId, UUID assignmentId, Double score, Double weight, String feedback) {
         validateScore(score);
 
         Grade grade = new Grade(
@@ -43,6 +43,7 @@ public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
             studentId,
             assignmentId,
             score,
+            weight,
             feedback,
             LocalDateTime.now()
         );
@@ -68,17 +69,20 @@ public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
     }
 
     @Transactional(readOnly = true)
-    public com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse getStudentPerformance(UUID studentId) {
+    public com.corhuila.edutrack.academic.domain.model.StudentPerformance getStudentPerformance(UUID studentId) {
         List<Grade> grades = gradeRepositoryPort.findByStudentId(studentId);
         if (grades.isEmpty()) {
-            return new com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse(0.0, false);
+            return new com.corhuila.edutrack.academic.domain.model.StudentPerformance(0.0, false);
         }
-        double sum = 0.0;
+        double sumProduct = 0.0;
+        double sumWeights = 0.0;
         for (Grade g : grades) {
-            sum += g.getScore();
+            double w = g.getWeight() != null ? g.getWeight() : 1.0;
+            sumProduct += (g.getScore() * w);
+            sumWeights += w;
         }
-        double average = sum / grades.size();
-        return new com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse(average, average >= 3.0);
+        double average = sumWeights > 0 ? sumProduct / sumWeights : 0.0;
+        return new com.corhuila.edutrack.academic.domain.model.StudentPerformance(average, average >= 3.0);
     }
 
     private void validateScore(Double score) {

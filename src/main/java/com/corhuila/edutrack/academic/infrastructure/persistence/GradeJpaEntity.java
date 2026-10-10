@@ -20,6 +20,9 @@ public class GradeJpaEntity {
     @Column(name = "score", nullable = false)
     private Double score;
 
+    @Column(name = "weight", nullable = false)
+    private Double weight;
+
     @Column(name = "feedback")
     private String feedback;
 
@@ -28,11 +31,12 @@ public class GradeJpaEntity {
 
     public GradeJpaEntity() {}
 
-    public GradeJpaEntity(UUID id, UUID studentId, UUID assignmentId, Double score, String feedback, LocalDateTime createdAt) {
+    public GradeJpaEntity(UUID id, UUID studentId, UUID assignmentId, Double score, Double weight, String feedback, LocalDateTime createdAt) {
         this.id = id;
         this.studentId = studentId;
         this.assignmentId = assignmentId;
         this.score = score;
+        this.weight = weight != null ? weight : 1.0;
         this.feedback = feedback;
         this.createdAt = createdAt;
     }
@@ -45,6 +49,8 @@ public class GradeJpaEntity {
     public void setAssignmentId(UUID assignmentId) { this.assignmentId = assignmentId; }
     public Double getScore() { return score; }
     public void setScore(Double score) { this.score = score; }
+    public Double getWeight() { return weight; }
+    public void setWeight(Double weight) { this.weight = weight; }
     public String getFeedback() { return feedback; }
     public void setFeedback(String feedback) { this.feedback = feedback; }
     public LocalDateTime getCreatedAt() { return createdAt; }

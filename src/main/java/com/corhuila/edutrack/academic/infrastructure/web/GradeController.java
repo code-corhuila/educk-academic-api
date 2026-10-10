@@ -32,6 +32,7 @@ public class GradeController {
             request.getStudentId(),
             request.getAssignmentId(),
             request.getScore(),
+            request.getWeight(),
             request.getFeedback()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(GradeResponse.fromDomain(created));
@@ -45,7 +46,8 @@ public class GradeController {
 
     @GetMapping("/student/{studentId}/performance")
     public ResponseEntity<com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse> getStudentPerformance(@PathVariable UUID studentId) {
-        return ResponseEntity.ok(getGradesUseCase.getStudentPerformance(studentId));
+        com.corhuila.edutrack.academic.domain.model.StudentPerformance performance = getGradesUseCase.getStudentPerformance(studentId);
+        return ResponseEntity.ok(new com.corhuila.edutrack.academic.infrastructure.web.dto.StudentPerformanceResponse(performance.getAverage(), performance.isPassing()));
     }
 
     @GetMapping

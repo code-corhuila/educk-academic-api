@@ -4,5 +4,5 @@ import com.corhuila.edutrack.academic.domain.model.Grade;
 import java.util.UUID;
 
 public interface CreateGradeUseCase {
-    Grade createGrade(UUID studentId, UUID assignmentId, Double score, String feedback);
+    Grade createGrade(UUID studentId, UUID assignmentId, Double score, Double weight, String feedback);
 }
