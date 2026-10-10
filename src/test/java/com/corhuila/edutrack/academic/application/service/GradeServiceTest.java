@@ -38,7 +38,7 @@ class GradeServiceTest {
     void createGrade_shouldAppendGradeCreatedEventToOutbox() {
         when(gradeRepositoryPort.save(any(Grade.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Grade created = gradeService.createGrade(UUID.randomUUID(), UUID.randomUUID(), 4.5, "Well done");
+        Grade created = gradeService.createGrade(UUID.randomUUID(), UUID.randomUUID(), 4.5, 1.0, "Well done");
 
         ArgumentCaptor<DomainEvent> captor = ArgumentCaptor.forClass(DomainEvent.class);
         verify(outboxEventPort).append(eq("Grade"), captor.capture());
@@ -49,7 +49,7 @@ class GradeServiceTest {
     @Test
     void createGrade_withInvalidScore_shouldNotPersistNorAppendEvent() {
         assertThrows(InvalidGradeException.class,
-            () -> gradeService.createGrade(UUID.randomUUID(), UUID.randomUUID(), 5.1, null));
+            () -> gradeService.createGrade(UUID.randomUUID(), UUID.randomUUID(), 5.1, 1.0, null));
 
         verifyNoInteractions(gradeRepositoryPort, outboxEventPort);
     }
