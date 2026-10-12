@@ -19,12 +19,13 @@ public class JwtProvider {
 
     public JwtProvider(
             @Value("${jwt.secret}") String secret) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
     public boolean validateToken(String token) {
         try {
             Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+            java.util.UUID.fromString(getClaims(token).get("userId", String.class));
             return true;
         } catch (Exception e) {
             org.slf4j.LoggerFactory.getLogger(JwtProvider.class).error("Invalid JWT token: {}", e.getMessage());
@@ -38,7 +39,8 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
-        String username = claims.getSubject();
+        String username = claims.get("userId", String.class);
+        java.util.UUID.fromString(username);
         String role = claims.get("role", String.class);
         
         return new UsernamePasswordAuthenticationToken(

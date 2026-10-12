@@ -37,6 +37,9 @@ public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
     @Transactional
     public Grade createGrade(UUID studentId, UUID assignmentId, Double score, Double weight, String feedback) {
         validateScore(score);
+        if (studentId == null || assignmentId == null) throw new InvalidGradeException("Student and assignment are required");
+        if (weight != null && (!Double.isFinite(weight) || weight <= 0 || weight > 1))
+            throw new InvalidGradeException("Weight must be greater than zero and at most one");
 
         Grade grade = new Grade(
             UUID.randomUUID(),
@@ -86,7 +89,7 @@ public class GradeService implements CreateGradeUseCase, GetGradesUseCase {
     }
 
     private void validateScore(Double score) {
-        if (score == null || score < MIN_SCORE || score > MAX_SCORE) {
+        if (score == null || !Double.isFinite(score) || score < MIN_SCORE || score > MAX_SCORE) {
             throw new InvalidGradeException("Score must be between 0.0 and 5.0 according to academic scale");
         }
     }
