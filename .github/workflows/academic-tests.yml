@@ -1,0 +1,27 @@
+name: academic persistence tests
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: api
+      - uses: actions/checkout@v4
+        with:
+          repository: code-corhuila/educk-academic-db
+          ref: 202b7c66798727d79c9300a4b3158c325794e2de
+          path: database
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: api/pom.xml
+      - name: Verify against owning database
+        working-directory: api
+        run: mvn -B verify -Dapi.version=1.44 -Dacademic.db.path="$GITHUB_WORKSPACE/database"

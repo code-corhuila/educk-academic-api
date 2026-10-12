@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "grades")
+@Table(name = "grades", schema = "academic_schema")
 public class GradeJpaEntity {
 
     @Id
@@ -17,17 +17,29 @@ public class GradeJpaEntity {
     @Column(name = "assignment_id", nullable = false)
     private UUID assignmentId;
 
-    @Column(name = "score", nullable = false)
+    @Column(name = "grade", nullable = false)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NUMERIC)
     private Double score;
 
     @Column(name = "weight", nullable = false)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NUMERIC)
     private Double weight;
 
-    @Column(name = "feedback")
+    @Column(name = "comment")
     private String feedback;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "subject_id", nullable = false)
+    private UUID subjectId;
+    @Column(name = "graded_by", nullable = false)
+    private UUID gradedBy;
+
+    public void setContext(UUID subjectId, UUID gradedBy) {
+        this.subjectId = subjectId;
+        this.gradedBy = gradedBy;
+    }
 
     public GradeJpaEntity() {}
 

@@ -14,7 +14,10 @@ public class JpaGradeRepositoryAdapter implements GradeRepositoryPort {
 
     private final SpringDataGradeRepository repository;
 
-    public JpaGradeRepositoryAdapter(SpringDataGradeRepository repository) {
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
+
+    public JpaGradeRepositoryAdapter(SpringDataGradeRepository repository, org.springframework.jdbc.core.JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
         this.repository = repository;
     }
 
@@ -29,6 +32,15 @@ public class JpaGradeRepositoryAdapter implements GradeRepositoryPort {
             grade.getFeedback(),
             grade.getCreatedAt()
         );
+        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) throw new org.springframework.security.access.AccessDeniedException("Teacher authentication required");
+        UUID teacher = UUID.fromString(authentication.getName());
+        var subjects = jdbc.queryForList("SELECT a.subject_id FROM academic_schema.assignments a "
+                + "JOIN academic_schema.subjects s ON s.id = a.subject_id "
+                + "WHERE a.id = ? AND s.teacher_id = ? AND s.status = 'ACTIVE' AND a.status <> 'CANCELLED'",
+                UUID.class, grade.getAssignmentId(), teacher);
+        if (subjects.size() != 1) throw new org.springframework.security.access.AccessDeniedException("Assignment is not available to this teacher");
+        entity.setContext(subjects.getFirst(), teacher);
         GradeJpaEntity saved = repository.save(entity);
         return toDomain(saved);
     }

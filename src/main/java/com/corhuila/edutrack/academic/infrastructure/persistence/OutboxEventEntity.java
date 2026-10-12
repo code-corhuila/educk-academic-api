@@ -21,7 +21,7 @@ import jakarta.persistence.Table;
  * Each row is a domain event waiting to be relayed to RabbitMQ.
  */
 @Entity
-@Table(name = "outbox_events")
+@Table(name = "outbox_events", schema = "academic_schema")
 public class OutboxEventEntity {
 
     @Id
@@ -33,7 +33,7 @@ public class OutboxEventEntity {
     @Column(name = "aggregate_id", nullable = false)
     private UUID aggregateId;
 
-    @Column(name = "event_type", nullable = false, length = 100)
+    @Column(name = "type", nullable = false, length = 100)
     private String eventType;
 
     /** Event envelope serialized as JSON and stored in a PostgreSQL JSONB column. */
