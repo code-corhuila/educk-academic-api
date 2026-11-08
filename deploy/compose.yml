@@ -9,7 +9,7 @@ services:
       DB_NAME: ${PG_DATABASE:?Set PG_DATABASE}
       DB_USER: academic_app
       DB_PASSWORD: ${ACADEMIC_APP_PASSWORD:?Set ACADEMIC_APP_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:?Set JWT_PUBLIC_KEY}
     depends_on:
       academic-db-migrate:
         condition: service_completed_successfully
