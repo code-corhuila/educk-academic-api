@@ -23,8 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Set<String> PUBLIC_PATHS = Set.of(
             "/health",
             "/actuator/health",
-            "/api/v1/grades/health"
-    );
+            "/api/v1/grades/health");
 
     private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
@@ -83,7 +82,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         objectMapper.writeValue(response.getOutputStream(), Map.of(
                 "error", "UNAUTHORIZED",
-                "message", message
-        ));
+                "message", message));
     }
 }
