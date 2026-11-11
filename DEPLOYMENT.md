@@ -1,9 +1,10 @@
 # Academic persistence verification
 
 Use Java 21 and the owning educk-academic-db migrations through V2.3.
-Set DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD and JWT_SECRET explicitly.
-JWT_SECRET must match Identity. The signed userId and TEACHER role identify the
-actor; only the active subject's assigned teacher may create its grades.
+Set DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD and JWT_PUBLIC_KEY explicitly.
+JWT_PUBLIC_KEY must match the Identity service RSA public key (`RS256`).
+The verified token `sub` (UUID) and `TEACHER` role identify the actor; only the
+active subject's assigned teacher may create its grades.
 
 Run mvn verify -Dapi.version=1.44 -Dacademic.db.path=/path/to/educk-academic-db
 with Docker available. The integration test uses disposable PostgreSQL 16 and
