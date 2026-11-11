@@ -79,6 +79,11 @@ public class OutboxEventEntity {
     public Instant getCreatedAt() { return createdAt; }
     public Instant getProcessedAt() { return processedAt; }
 
+    public void markProcessed(Instant timestamp) {
+        this.status = OutboxEventStatus.PROCESSED;
+        this.processedAt = Objects.requireNonNull(timestamp, "timestamp must not be null");
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

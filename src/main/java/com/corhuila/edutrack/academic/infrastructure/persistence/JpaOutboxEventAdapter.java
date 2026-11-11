@@ -60,6 +60,15 @@ public class JpaOutboxEventAdapter implements OutboxEventPort {
             .toList();
     }
 
+    @Override
+    @Transactional
+    public void markProcessed(@org.springframework.lang.NonNull UUID id) {
+        repository.findById(id).ifPresent(entity -> {
+            entity.markProcessed(Instant.now());
+            repository.save(entity);
+        });
+    }
+
     private String serialize(DomainEvent event) {
         try {
             return objectMapper.writeValueAsString(event);

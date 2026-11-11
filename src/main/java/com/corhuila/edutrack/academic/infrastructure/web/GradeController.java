@@ -20,6 +20,7 @@ public class GradeController {
 
     private final CreateGradeUseCase createGradeUseCase;
     private final GetGradesUseCase getGradesUseCase;
+    private final java.util.Map<String, GradeResponse> idempotencyCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     public GradeController(CreateGradeUseCase createGradeUseCase, GetGradesUseCase getGradesUseCase) {
         this.createGradeUseCase = createGradeUseCase;
@@ -27,7 +28,15 @@ public class GradeController {
     }
 
     @PostMapping
-    public ResponseEntity<GradeResponse> createGrade(@RequestBody CreateGradeRequest request) {
+    public ResponseEntity<GradeResponse> createGrade(
+            @RequestBody CreateGradeRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            GradeResponse cached = idempotencyCache.get(idempotencyKey.trim());
+            if (cached != null) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(cached);
+            }
+        }
         Grade created = createGradeUseCase.createGrade(
             request.getStudentId(),
             request.getAssignmentId(),
@@ -35,7 +44,11 @@ public class GradeController {
             request.getWeight(),
             request.getFeedback()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(GradeResponse.fromDomain(created));
+        GradeResponse response = GradeResponse.fromDomain(created);
+        if (idempotencyKey != null && !idempotencyKey.isBlank() && idempotencyCache.size() < 1024) {
+            idempotencyCache.putIfAbsent(idempotencyKey.trim(), response);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/student/{studentId}")
