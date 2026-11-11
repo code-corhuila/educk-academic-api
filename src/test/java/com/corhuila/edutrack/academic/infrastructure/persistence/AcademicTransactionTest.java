@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
 @Testcontainers
+@SuppressWarnings("null")
 class AcademicTransactionTest {
     @Container static PostgreSQLContainer<?> database = database();
     static PostgreSQLContainer<?> database() {

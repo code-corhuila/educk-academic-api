@@ -21,6 +21,7 @@ import java.util.UUID;
  * Writes events to the {@code outbox_events} table instead of publishing them directly.
  */
 @Component
+@SuppressWarnings("null")
 public class JpaOutboxEventAdapter implements OutboxEventPort {
 
     private final OutboxEventRepository repository;
@@ -62,7 +63,10 @@ public class JpaOutboxEventAdapter implements OutboxEventPort {
 
     @Override
     @Transactional
-    public void markProcessed(@org.springframework.lang.NonNull UUID id) {
+    public void markProcessed(UUID id) {
+        if (id == null) {
+            return;
+        }
         repository.findById(id).ifPresent(entity -> {
             entity.markProcessed(Instant.now());
             repository.save(entity);
