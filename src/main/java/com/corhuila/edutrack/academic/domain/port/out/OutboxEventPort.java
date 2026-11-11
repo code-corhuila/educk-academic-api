@@ -23,4 +23,10 @@ public interface OutboxEventPort {
      * Returns the oldest PENDING events first, limited to {@code limit} items.
      */
     List<OutboxEvent> findPending(int limit);
+
+    /**
+     * Marks an outbox event as PROCESSED once relayed.
+     */
+    default void markProcessed(java.util.UUID id) {
+    }
 }

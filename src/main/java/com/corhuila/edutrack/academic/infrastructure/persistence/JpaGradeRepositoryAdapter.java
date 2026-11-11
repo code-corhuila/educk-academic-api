@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
+@SuppressWarnings("null")
 public class JpaGradeRepositoryAdapter implements GradeRepositoryPort {
 
     private final SpringDataGradeRepository repository;
